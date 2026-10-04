@@ -1,0 +1,19 @@
+# Binaries
+syslog-server-bin
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Local data & SQLite databases
+*.db
+*.db-wal
+*.db-shm
+data/
+syslog-server/data/
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,16 @@
+configuration:
+  syslog_port:
+    name: "Syslog UDP Port"
+    description: "The UDP port on which the syslog server listens for incoming messages (default: 514)."
+  retention_days:
+    name: "Log Retention (Days)"
+    description: "Number of days to keep logs before automatic cleanup (default: 14 days)."
+  max_db_size_mb:
+    name: "Max Database Size (MB)"
+    description: "Maximum SQLite database size in megabytes. Old logs are pruned if this limit is reached (default: 500 MB)."
+  rate_limit_per_sec:
+    name: "Rate Limit (messages/sec)"
+    description: "Maximum number of syslog messages accepted per second per IP address to prevent flooding (default: 100)."
+  allowed_hosts:
+    name: "Allowed IP Addresses or Subnets"
+    description: "List of trusted IP addresses or CIDR subnets allowed to send logs (e.g. 192.168.1.1, 192.168.1.0/24). If empty, logs from all local network IPs are accepted."
