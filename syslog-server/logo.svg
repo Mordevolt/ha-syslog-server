@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="780" height="380" rx="24" fill="url(#grad)" stroke="#0284c7" stroke-width="3"/>
+  <!-- Scaled Icon on the left -->
+  <g transform="translate(50, 100) scale(0.85)">
+    <rect x="8" y="8" width="240" height="240" rx="48" fill="#0f172a" stroke="#0284c7" stroke-width="4"/>
+    <rect x="48" y="145" width="160" height="55" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+    <line x1="75" y1="145" x2="60" y2="95" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="181" y1="145" x2="196" y2="95" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+    <line x1="128" y1="145" x2="128" y2="85" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="75" cy="172" r="5" fill="#34d399"/>
+    <circle cx="95" cy="172" r="5" fill="#38bdf8"/>
+    <circle cx="115" cy="172" r="5" fill="#38bdf8"/>
+    <circle cx="135" cy="172" r="5" fill="#38bdf8"/>
+    <rect x="88" y="50" width="80" height="75" rx="8" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/>
+    <line x1="100" y1="68" x2="122" y2="68" stroke="#34d399" stroke-width="3" stroke-linecap="round"/>
+    <line x1="100" y1="82" x2="156" y2="82" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+    <line x1="100" y1="96" x2="145" y2="96" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="100" y1="110" x2="150" y2="110" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- Text on the right -->
+  <text x="290" y="150" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="42" font-weight="bold" fill="#ffffff">SYSLOG SERVER</text>
+  <text x="290" y="190" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600" fill="#38bdf8">Home Assistant Add-on</text>
+  <text x="290" y="225" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" fill="#94a3b8">Ultra-lightweight Log Collector for Wi-Fi Routers</text>
+  <!-- Feature Chips -->
+  <g transform="translate(290, 260)">
+    <rect x="0" y="0" width="85" height="30" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="12" y="20" font-family="sans-serif" font-size="13" font-weight="600" fill="#34d399">Go 1.22</text>
+    
+    <rect x="95" y="0" width="125" height="30" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="105" y="20" font-family="sans-serif" font-size="13" font-weight="600" fill="#34d399">~4 MB RAM</text>
+
+    <rect x="230" y="0" width="105" height="30" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="240" y="20" font-family="sans-serif" font-size="13" fill="#e2e8f0">Ingress UI</text>
+
+    <rect x="345" y="0" width="115" height="30" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="355" y="20" font-family="sans-serif" font-size="13" fill="#e2e8f0">SQLite WAL</text>
+  </g>
+</svg>

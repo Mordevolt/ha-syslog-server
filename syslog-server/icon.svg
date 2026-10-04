@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="#0f172a" stroke="#0284c7" stroke-width="4"/>
+  <!-- Router Base -->
+  <rect x="48" y="145" width="160" height="55" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="3"/>
+  <!-- Antennas -->
+  <line x1="75" y1="145" x2="60" y2="95" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="181" y1="145" x2="196" y2="95" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="128" y1="145" x2="128" y2="85" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <!-- LED lights -->
+  <circle cx="75" cy="172" r="5" fill="#34d399"/>
+  <circle cx="95" cy="172" r="5" fill="#38bdf8"/>
+  <circle cx="115" cy="172" r="5" fill="#38bdf8"/>
+  <circle cx="135" cy="172" r="5" fill="#38bdf8"/>
+  <!-- Log document / terminal symbol -->
+  <rect x="88" y="50" width="80" height="75" rx="8" fill="#0f172a" stroke="#94a3b8" stroke-width="3"/>
+  <line x1="100" y1="68" x2="122" y2="68" stroke="#34d399" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="82" x2="156" y2="82" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="96" x2="145" y2="96" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+  <line x1="100" y1="110" x2="150" y2="110" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+</svg>
