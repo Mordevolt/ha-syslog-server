@@ -14,7 +14,7 @@ import (
 
 func main() {
 	log.Println("==================================================")
-	log.Println("   Home Assistant Syslog Server (Go) v1.0.1      ")
+	log.Println("   Home Assistant Syslog Server (Go) v1.0.2      ")
 	log.Println("==================================================")
 
 	// 1. Load Configuration

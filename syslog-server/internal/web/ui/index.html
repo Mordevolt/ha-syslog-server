@@ -95,7 +95,7 @@
     <div class="brand">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
       <span id="txt-app-title">Syslog Server</span>
-      <span class="version-tag">v1.0.1</span>
+      <span class="version-tag">v1.0.2</span>
     </div>
 
     <div class="stats-container">
@@ -359,9 +359,19 @@
     }
 
     function formatTime(isoStr) {
-      if (!isoStr) return '';
+      if (!isoStr) return '-';
       const d = new Date(isoStr);
-      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour12: false });
+      if (isNaN(d.getTime()) || d.getFullYear() < 2000) {
+        return typeof isoStr === 'string' ? isoStr : '-';
+      }
+      const pad = n => String(n).padStart(2, '0');
+      const year = d.getFullYear();
+      const month = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hours = pad(d.getHours());
+      const minutes = pad(d.getMinutes());
+      const seconds = pad(d.getSeconds());
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
     function getTimeBounds() {
@@ -389,10 +399,16 @@
     function createLogRow(entry) {
       const tr = document.createElement('tr');
       const sevClass = 'badge-' + (entry.severity !== undefined ? entry.severity : 6);
+
+      let hostDisplay = escapeHtml(entry.source_ip || entry.hostname || '-');
+      if (entry.hostname && entry.hostname !== entry.source_ip) {
+        hostDisplay += ` <span style="color: var(--text-muted); font-size: 0.72rem; font-weight: normal;">(${escapeHtml(entry.hostname)})</span>`;
+      }
+
       tr.innerHTML = `
         <td class="time-cell">${escapeHtml(formatTime(entry.timestamp))}</td>
         <td><span class="badge ${sevClass}">${escapeHtml(entry.severity_name || 'info')}</span></td>
-        <td class="host-tag">${escapeHtml(entry.hostname || entry.source_ip)}</td>
+        <td class="host-tag">${hostDisplay}</td>
         <td class="process-tag">${escapeHtml(entry.tag || '-')}</td>
         <td class="msg-cell">${escapeHtml(entry.message)}</td>
       `;

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+- **Fixed Timestamp Parsing & Display:** Resolved SQLite timestamp scanning where dates displayed as `01.01.1` (year 1) due to RFC3339 layout mismatch; added multi-format driver parser (`parseDBTime`) and local timezone preservation (`time.Local`).
+- **Enhanced Syslog RFC Parser:** Added full RFC 5424 ISO timestamp support, Russian month abbreviations, and single-digit day handling.
+- **Router / IP Column Display:** The router IP address is now displayed prominently by default (`source_ip`), with the device hostname shown alongside if available.
+
 ## 1.0.1
 - **Fixed shutdown panic:** Added `sync.Once` guards to ensure graceful and idempotent termination of DB and UDP listeners when stopping the add-on.
 - **Bilingual Interface:** English is now the default language for the UI and documentation, with an instant toggle switch for Russian (persisted in local storage).

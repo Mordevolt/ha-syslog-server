@@ -317,17 +317,54 @@ func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
 	var entries []*LogEntry
 	for rows.Next() {
 		var e LogEntry
-		var tsStr string
-		if err := rows.Scan(&e.ID, &tsStr, &e.Facility, &e.Severity, &e.SeverityName, &e.SourceIP, &e.Hostname, &e.Tag, &e.Message); err != nil {
+		var rawTS interface{}
+		if err := rows.Scan(&e.ID, &rawTS, &e.Facility, &e.Severity, &e.SeverityName, &e.SourceIP, &e.Hostname, &e.Tag, &e.Message); err != nil {
 			continue
 		}
-		if t, err := time.Parse("2006-01-02 15:04:05", tsStr); err == nil {
-			e.Timestamp = t
-		}
+		e.Timestamp = parseDBTime(rawTS)
 		entries = append(entries, &e)
 	}
 
 	return entries, total, nil
+}
+
+func parseDBTime(v interface{}) time.Time {
+	if v == nil {
+		return time.Now()
+	}
+	switch val := v.(type) {
+	case time.Time:
+		if val.Year() < 2000 {
+			return time.Now()
+		}
+		return val
+	case string:
+		val = strings.TrimSpace(val)
+		if val == "" {
+			return time.Now()
+		}
+		layouts := []string{
+			time.RFC3339Nano,
+			time.RFC3339,
+			"2006-01-02 15:04:05",
+			"2006-01-02T15:04:05",
+			"2006-01-02 15:04:05.999999999",
+			"2006-01-02 15:04:05 -0700 MST",
+			"2006-01-02 15:04:05-07:00",
+			"2006-01-02 15:04:05+07:00",
+		}
+		for _, layout := range layouts {
+			if t, err := time.Parse(layout, val); err == nil {
+				if t.Year() < 2000 {
+					return time.Now()
+				}
+				return t
+			}
+		}
+	case []byte:
+		return parseDBTime(string(val))
+	}
+	return time.Now()
 }
 
 func (d *DB) GetStats() (*Stats, error) {
