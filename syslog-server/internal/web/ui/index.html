@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +14,8 @@
       --border-color: #374151;
       --accent: #0284c7;
       --accent-hover: #0369a1;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
       --badge-emerg: #dc2626;
       --badge-err: #ef4444;
       --badge-warn: #f59e0b;
@@ -24,39 +26,47 @@
     body { background-color: var(--bg-primary); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
     /* Header */
-    header { background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; color: #fff; }
-    .brand svg { width: 26px; height: 26px; fill: var(--accent); }
-    .version-tag { font-size: 0.75rem; background: #374151; padding: 2px 6px; border-radius: 4px; color: #9ca3af; }
+    header { background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.1rem; color: #fff; }
+    .brand svg { width: 24px; height: 24px; fill: var(--accent); }
+    .version-tag { font-size: 0.72rem; background: #374151; padding: 2px 6px; border-radius: 4px; color: #9ca3af; font-family: monospace; }
 
     /* Top Stats */
-    .stats-container { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    .stat-chip { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; display: flex; gap: 6px; }
+    .stats-container { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .stat-chip { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; display: flex; gap: 6px; }
     .stat-label { color: var(--text-muted); }
     .stat-val { font-weight: 600; color: #38bdf8; }
 
     /* Top Actions */
-    .top-actions { display: flex; gap: 8px; align-items: center; }
-    button { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
+    .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button, select, input { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; font-size: 0.82rem; }
+    button { padding: 6px 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s; }
     button:hover { background: #2d3748; border-color: #4b5563; }
     button.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
     button.btn-primary:hover { background: var(--accent-hover); }
+    button.btn-danger { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+    button.btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
     button.btn-live { border-color: #10b981; color: #34d399; }
     button.btn-paused { border-color: #f59e0b; color: #fbbf24; }
 
+    .lang-switcher { padding: 5px 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; }
+
     /* Filter Bar */
-    .filter-bar { background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 10px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    .search-box { flex: 1; min-width: 200px; position: relative; }
-    .search-box input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; padding: 6px 12px 6px 32px; font-size: 0.85rem; outline: none; }
+    .filter-bar { background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 8px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 180px; position: relative; }
+    .search-box input { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); color: #fff; padding: 6px 10px 6px 30px; font-size: 0.82rem; outline: none; }
     .search-box input:focus { border-color: var(--accent); }
-    .search-box svg { position: absolute; left: 10px; top: 8px; width: 14px; height: 14px; fill: var(--text-muted); }
-    select { background: var(--bg-secondary); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; outline: none; }
+    .search-box svg { position: absolute; left: 8px; top: 8px; width: 14px; height: 14px; fill: var(--text-muted); }
+    select { padding: 6px 10px; outline: none; }
     select:focus { border-color: var(--accent); }
+    .time-inputs { display: none; align-items: center; gap: 6px; }
+    .time-inputs.active { display: flex; }
+    .time-inputs input[type="datetime-local"] { padding: 5px 8px; font-size: 0.78rem; }
 
     /* Main Log Container */
     main { flex: 1; overflow-y: auto; padding: 0; background: #0b0f19; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 0.82rem; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { position: sticky; top: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 8px 12px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; z-index: 10; }
+    th { position: sticky; top: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 8px 12px; color: var(--text-muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; z-index: 10; }
     td { padding: 6px 12px; border-bottom: 1px solid #1f2937; vertical-align: top; white-space: nowrap; }
     tr:hover { background-color: #172033; }
     td.msg-cell { white-space: pre-wrap; word-break: break-all; min-width: 300px; color: #e2e8f0; }
@@ -73,7 +83,7 @@
     .time-cell { color: #94a3b8; }
 
     /* Footer Pagination */
-    footer { background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); padding: 8px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+    footer { background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
     .pagination-btn { padding: 4px 8px; font-size: 0.75rem; }
     .live-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background-color: #10b981; animation: pulse 2s infinite; }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
@@ -84,84 +94,193 @@
   <header>
     <div class="brand">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
-      <span>Syslog Server</span>
-      <span class="version-tag">v1.0.0</span>
+      <span id="txt-app-title">Syslog Server</span>
+      <span class="version-tag">v1.0.1</span>
     </div>
 
     <div class="stats-container">
       <div class="stat-chip">
-        <span class="stat-label">Всего записей:</span>
+        <span class="stat-label" id="lbl-stat-total">Total:</span>
         <span class="stat-val" id="stat-total">0</span>
       </div>
       <div class="stat-chip">
-        <span class="stat-label">Размер БД:</span>
+        <span class="stat-label" id="lbl-stat-size">DB Size:</span>
         <span class="stat-val" id="stat-size">0 MB</span>
       </div>
       <div class="stat-chip">
-        <span class="stat-label">Хранение:</span>
-        <span class="stat-val" id="stat-retention">14 дн.</span>
+        <span class="stat-label" id="lbl-stat-retention">Retention:</span>
+        <span class="stat-val" id="stat-retention">14 days</span>
       </div>
     </div>
 
     <div class="top-actions">
       <button id="btn-toggle-stream" class="btn-live">
         <span class="live-dot" id="live-indicator"></span>
-        <span id="stream-text">Live: Вкл</span>
+        <span id="stream-text">Live: ON</span>
       </button>
-      <button id="btn-clear">Очистить экран</button>
-      <button class="btn-primary" id="btn-export-csv">📥 Скачать CSV</button>
-      <button class="btn-primary" id="btn-export-raw">📄 Скачать RAW</button>
+      <button id="btn-clear-screen" id="txt-clear-screen">Clear View</button>
+      <button id="btn-purge-db" class="btn-danger" title="Purge database">🗑️ <span id="txt-purge-db">Clear DB</span></button>
+      <button class="btn-primary" id="btn-export-csv">📥 CSV</button>
+      <button class="btn-primary" id="btn-export-raw">📄 RAW</button>
+      <select id="select-lang" class="lang-switcher">
+        <option value="en">🇺🇸 EN</option>
+        <option value="ru">🇷🇺 RU</option>
+      </select>
     </div>
   </header>
 
   <div class="filter-bar">
     <div class="search-box">
       <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      <input type="text" id="search-input" placeholder="Поиск по тексту, тегу или процессу...">
+      <input type="text" id="search-input" placeholder="Search logs by text, tag or host...">
     </div>
 
     <select id="select-host">
-      <option value="">Все роутеры (IP)</option>
+      <option value="">All Routers (IP)</option>
     </select>
 
     <select id="select-severity">
-      <option value="">Все уровни</option>
-      <option value="3">Ошибки (Error + Crit)</option>
-      <option value="4">Предупреждения (Warning +)</option>
-      <option value="6">Информационные (Info +)</option>
-      <option value="7">Отладка (Debug)</option>
+      <option value="">All Levels</option>
+      <option value="3">Errors (Error + Crit)</option>
+      <option value="4">Warnings (Warning +)</option>
+      <option value="6">Info (Info +)</option>
+      <option value="7">Debug</option>
     </select>
 
-    <button id="btn-refresh">🔄 Обновить</button>
+    <select id="select-timerange">
+      <option value="all">🕒 All Time</option>
+      <option value="15m">Last 15 minutes</option>
+      <option value="1h">Last 1 hour</option>
+      <option value="6h">Last 6 hours</option>
+      <option value="24h">Last 24 hours</option>
+      <option value="7d">Last 7 days</option>
+      <option value="custom">📅 Custom Range...</option>
+    </select>
+
+    <div class="time-inputs" id="custom-time-container">
+      <input type="datetime-local" id="time-from" title="Start Time">
+      <span style="color: var(--text-muted); font-size: 0.8rem;">—</span>
+      <input type="datetime-local" id="time-to" title="End Time">
+      <button id="btn-apply-custom-time">Apply</button>
+    </div>
+
+    <button id="btn-refresh">🔄 <span id="txt-refresh">Refresh</span></button>
   </div>
 
   <main id="log-container">
     <table>
       <thead>
         <tr>
-          <th style="width: 160px;">Время</th>
-          <th style="width: 90px;">Уровень</th>
-          <th style="width: 140px;">Роутер / IP</th>
-          <th style="width: 130px;">Процесс</th>
-          <th>Сообщение</th>
+          <th style="width: 160px;" id="th-time">Timestamp</th>
+          <th style="width: 90px;" id="th-level">Level</th>
+          <th style="width: 140px;" id="th-host">Router / IP</th>
+          <th style="width: 130px;" id="th-tag">Tag / Process</th>
+          <th id="th-msg">Message</th>
         </tr>
       </thead>
       <tbody id="logs-tbody">
-        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Загрузка логов...</td></tr>
+        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;" id="td-empty">Loading logs...</td></tr>
       </tbody>
     </table>
   </main>
 
   <footer>
-    <div id="footer-count">Показано 0 записей</div>
+    <div id="footer-count">Showing 0 entries</div>
     <div style="display: flex; gap: 8px; align-items: center;">
-      <button class="pagination-btn" id="btn-prev" disabled>◀ Назад</button>
-      <span id="page-info" style="color: var(--text-muted); font-size: 0.75rem;">Стр. 1</span>
-      <button class="pagination-btn" id="btn-next">Вперед ▶</button>
+      <button class="pagination-btn" id="btn-prev" disabled>◀ Prev</button>
+      <span id="page-info" style="color: var(--text-muted); font-size: 0.75rem;">Page 1</span>
+      <button class="pagination-btn" id="btn-next">Next ▶</button>
     </div>
   </footer>
 
   <script>
+    const i18n = {
+      en: {
+        app_title: "Syslog Server",
+        stat_total: "Total:",
+        stat_size: "DB Size:",
+        stat_retention: "Retention:",
+        days_unit: "days",
+        live_on: "Live: ON",
+        live_paused: "Live: Paused",
+        clear_screen: "Clear View",
+        purge_db: "Clear DB",
+        refresh: "Refresh",
+        search_placeholder: "Search logs by text, tag or host...",
+        all_hosts: "All Routers (IP)",
+        all_levels: "All Levels",
+        level_err: "Errors (Error + Crit)",
+        level_warn: "Warnings (Warning +)",
+        level_info: "Info (Info +)",
+        level_debug: "Debug",
+        time_all: "🕒 All Time",
+        time_15m: "Last 15 minutes",
+        time_1h: "Last 1 hour",
+        time_6h: "Last 6 hours",
+        time_24h: "Last 24 hours",
+        time_7d: "Last 7 days",
+        time_custom: "📅 Custom Range...",
+        apply: "Apply",
+        th_time: "Timestamp",
+        th_level: "Level",
+        th_host: "Router / IP",
+        th_tag: "Tag / Process",
+        th_msg: "Message",
+        loading: "Loading logs...",
+        no_logs: "No logs found matching current filter",
+        screen_cleared: "View cleared (new logs will appear as they arrive)",
+        showing: "Showing {count} of {total} entries",
+        page: "Page {page} of {pages}",
+        prev: "◀ Prev",
+        next: "Next ▶",
+        confirm_purge: "⚠️ WARNING: Are you sure you want to permanently delete ALL syslog records from the database?\n\nThis cannot be undone!",
+        purge_done: "Database cleared successfully."
+      },
+      ru: {
+        app_title: "Syslog Сервер",
+        stat_total: "Всего:",
+        stat_size: "Размер БД:",
+        stat_retention: "Хранение:",
+        days_unit: "дн.",
+        live_on: "Live: Вкл",
+        live_paused: "Live: Пауза",
+        clear_screen: "Очистить экран",
+        purge_db: "Очистить БД",
+        refresh: "Обновить",
+        search_placeholder: "Поиск по тексту, тегу или роутеру...",
+        all_hosts: "Все роутеры (IP)",
+        all_levels: "Все уровни",
+        level_err: "Ошибки (Error + Crit)",
+        level_warn: "Предупреждения (Warning +)",
+        level_info: "Информационные (Info +)",
+        level_debug: "Отладка (Debug)",
+        time_all: "🕒 За всё время",
+        time_15m: "Последние 15 минут",
+        time_1h: "Последний 1 час",
+        time_6h: "Последние 6 часов",
+        time_24h: "Последние 24 часа",
+        time_7d: "Последние 7 дней",
+        time_custom: "📅 Выбрать период...",
+        apply: "Применить",
+        th_time: "Время",
+        th_level: "Уровень",
+        th_host: "Роутер / IP",
+        th_tag: "Процесс",
+        th_msg: "Сообщение",
+        loading: "Загрузка логов...",
+        no_logs: "Нет логов, удовлетворяющих фильтру",
+        screen_cleared: "Экран очищен (новые логи будут появляться по мере поступления)",
+        showing: "Показано {count} из {total} записей",
+        page: "Стр. {page} из {pages}",
+        prev: "◀ Назад",
+        next: "Вперед ▶",
+        confirm_purge: "⚠️ ВНИМАНИЕ: Вы уверены, что хотите полностью очистить базу данных Syslog?\n\nВсе сохранённые логи будут безвозвратно удалены!",
+        purge_done: "База данных успешно очищена."
+      }
+    };
+
+    let currentLang = localStorage.getItem('syslog_lang') || 'en';
+
     const state = {
       isStreaming: true,
       eventSource: null,
@@ -171,8 +290,63 @@
       search: '',
       host: '',
       severity: '',
-      buffer: []
+      timeRange: 'all',
+      customFrom: '',
+      customTo: '',
+      retentionDays: 14
     };
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('syslog_lang', lang);
+      const t = i18n[lang] || i18n.en;
+
+      document.getElementById('select-lang').value = lang;
+      document.getElementById('txt-app-title').textContent = t.app_title;
+      document.getElementById('lbl-stat-total').textContent = t.stat_total;
+      document.getElementById('lbl-stat-size').textContent = t.stat_size;
+      document.getElementById('lbl-stat-retention').textContent = t.stat_retention;
+      document.getElementById('stat-retention').textContent = `${state.retentionDays} ${t.days_unit}`;
+
+      document.getElementById('stream-text').textContent = state.isStreaming ? t.live_on : t.live_paused;
+      document.getElementById('btn-clear-screen').textContent = t.clear_screen;
+      document.getElementById('txt-purge-db').textContent = t.purge_db;
+      document.getElementById('txt-refresh').textContent = t.refresh;
+      document.getElementById('search-input').placeholder = t.search_placeholder;
+
+      // Update options
+      const hostSel = document.getElementById('select-host');
+      if (hostSel.options.length > 0) hostSel.options[0].textContent = t.all_hosts;
+
+      const sevSel = document.getElementById('select-severity');
+      sevSel.options[0].textContent = t.all_levels;
+      sevSel.options[1].textContent = t.level_err;
+      sevSel.options[2].textContent = t.level_warn;
+      sevSel.options[3].textContent = t.level_info;
+      sevSel.options[4].textContent = t.level_debug;
+
+      const timeSel = document.getElementById('select-timerange');
+      timeSel.options[0].textContent = t.time_all;
+      timeSel.options[1].textContent = t.time_15m;
+      timeSel.options[2].textContent = t.time_1h;
+      timeSel.options[3].textContent = t.time_6h;
+      timeSel.options[4].textContent = t.time_24h;
+      timeSel.options[5].textContent = t.time_7d;
+      timeSel.options[6].textContent = t.time_custom;
+
+      document.getElementById('btn-apply-custom-time').textContent = t.apply;
+
+      document.getElementById('th-time').textContent = t.th_time;
+      document.getElementById('th-level').textContent = t.th_level;
+      document.getElementById('th-host').textContent = t.th_host;
+      document.getElementById('th-tag').textContent = t.th_tag;
+      document.getElementById('th-msg').textContent = t.th_msg;
+
+      document.getElementById('btn-prev').textContent = t.prev;
+      document.getElementById('btn-next').textContent = t.next;
+
+      updatePagination();
+    }
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -190,6 +364,28 @@
       return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour12: false });
     }
 
+    function getTimeBounds() {
+      let from = null;
+      let to = null;
+
+      const now = new Date();
+      if (state.timeRange === '15m') {
+        from = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
+      } else if (state.timeRange === '1h') {
+        from = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+      } else if (state.timeRange === '6h') {
+        from = new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString();
+      } else if (state.timeRange === '24h') {
+        from = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+      } else if (state.timeRange === '7d') {
+        from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      } else if (state.timeRange === 'custom') {
+        if (state.customFrom) from = new Date(state.customFrom).toISOString();
+        if (state.customTo) to = new Date(state.customTo).toISOString();
+      }
+      return { from, to };
+    }
+
     function createLogRow(entry) {
       const tr = document.createElement('tr');
       const sevClass = 'badge-' + (entry.severity !== undefined ? entry.severity : 6);
@@ -204,6 +400,7 @@
     }
 
     async function loadLogs() {
+      const t = i18n[currentLang] || i18n.en;
       const params = new URLSearchParams({
         limit: state.limit,
         offset: state.offset
@@ -211,6 +408,10 @@
       if (state.search) params.set('search', state.search);
       if (state.host) params.set('ip', state.host);
       if (state.severity) params.set('severity', state.severity);
+
+      const { from, to } = getTimeBounds();
+      if (from) params.set('from', from);
+      if (to) params.set('to', to);
 
       try {
         const res = await fetch('api/logs?' + params.toString());
@@ -222,7 +423,7 @@
         tbody.innerHTML = '';
 
         if (!data.entries || data.entries.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Нет логов, удовлетворяющих фильтру</td></tr>';
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">${t.no_logs}</td></tr>`;
         } else {
           for (const e of data.entries) {
             tbody.appendChild(createLogRow(e));
@@ -235,24 +436,27 @@
     }
 
     async function loadStats() {
+      const t = i18n[currentLang] || i18n.en;
       try {
         const res = await fetch('api/stats');
         if (!res.ok) return;
         const data = await res.json();
+        state.retentionDays = data.retention_days || 14;
         document.getElementById('stat-total').textContent = (data.total_logs || 0).toLocaleString();
         document.getElementById('stat-size').textContent = (data.db_size_mb || 0).toFixed(1) + ' MB';
-        document.getElementById('stat-retention').textContent = (data.retention_days || 14) + ' дн.';
+        document.getElementById('stat-retention').textContent = `${state.retentionDays} ${t.days_unit}`;
       } catch (e) {}
     }
 
     async function loadHosts() {
+      const t = i18n[currentLang] || i18n.en;
       try {
         const res = await fetch('api/hosts');
         if (!res.ok) return;
         const hosts = await res.json();
         const sel = document.getElementById('select-host');
         const current = sel.value;
-        sel.innerHTML = '<option value="">Все роутеры (IP)</option>';
+        sel.innerHTML = `<option value="">${t.all_hosts}</option>`;
         if (hosts) {
           for (const h of hosts) {
             const opt = document.createElement('option');
@@ -274,10 +478,12 @@
 
       state.eventSource.onmessage = (event) => {
         if (!state.isStreaming) return;
+        // If viewing historical window, do not inject live logs
+        if (state.timeRange !== 'all') return;
+
         try {
           const entry = JSON.parse(event.data);
           
-          // Check client filters
           if (state.search && !entry.message.toLowerCase().includes(state.search.toLowerCase()) && !entry.tag.toLowerCase().includes(state.search.toLowerCase())) return;
           if (state.host && entry.source_ip !== state.host) return;
           if (state.severity && entry.severity > parseInt(state.severity, 10)) return;
@@ -291,7 +497,6 @@
           }
           tbody.insertBefore(newRow, tbody.firstChild);
 
-          // Keep table size under limit while live streaming
           if (tbody.children.length > state.limit) {
             tbody.removeChild(tbody.lastChild);
           }
@@ -309,10 +514,13 @@
     }
 
     function updatePagination() {
+      const t = i18n[currentLang] || i18n.en;
       const page = Math.floor(state.offset / state.limit) + 1;
       const totalPages = Math.ceil(state.total / state.limit) || 1;
-      document.getElementById('page-info').textContent = `Стр. ${page} из ${totalPages}`;
-      document.getElementById('footer-count').textContent = `Показано ${document.getElementById('logs-tbody').children.length} из ${state.total} записей`;
+      const count = document.getElementById('logs-tbody').children.length;
+
+      document.getElementById('page-info').textContent = t.page.replace('{page}', page).replace('{pages}', totalPages);
+      document.getElementById('footer-count').textContent = t.showing.replace('{count}', count).replace('{total}', state.total);
       document.getElementById('btn-prev').disabled = state.offset <= 0;
       document.getElementById('btn-next').disabled = state.offset + state.limit >= state.total;
     }
@@ -340,18 +548,74 @@
       loadLogs();
     });
 
+    // Time Range selector
+    document.getElementById('select-timerange').addEventListener('change', (e) => {
+      state.timeRange = e.target.value;
+      const customBox = document.getElementById('custom-time-container');
+      if (state.timeRange === 'custom') {
+        customBox.classList.add('active');
+        // Set default values: today start to now
+        const now = new Date();
+        const past = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        if (!document.getElementById('time-from').value) {
+          document.getElementById('time-from').value = past.toISOString().slice(0, 16);
+        }
+        if (!document.getElementById('time-to').value) {
+          document.getElementById('time-to').value = now.toISOString().slice(0, 16);
+        }
+      } else {
+        customBox.classList.remove('active');
+        state.offset = 0;
+        loadLogs();
+      }
+    });
+
+    document.getElementById('btn-apply-custom-time').addEventListener('click', () => {
+      state.customFrom = document.getElementById('time-from').value;
+      state.customTo = document.getElementById('time-to').value;
+      state.offset = 0;
+      loadLogs();
+    });
+
     document.getElementById('btn-refresh').addEventListener('click', () => {
       loadLogs();
       loadStats();
       loadHosts();
     });
 
-    document.getElementById('btn-clear').addEventListener('click', () => {
-      document.getElementById('logs-tbody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Экран очищен</td></tr>';
+    document.getElementById('btn-clear-screen').addEventListener('click', () => {
+      const t = i18n[currentLang] || i18n.en;
+      document.getElementById('logs-tbody').innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">${t.screen_cleared}</td></tr>`;
     });
 
+    // Purge database button
+    document.getElementById('btn-purge-db').addEventListener('click', async () => {
+      const t = i18n[currentLang] || i18n.en;
+      if (!confirm(t.confirm_purge)) {
+        return;
+      }
+      try {
+        const res = await fetch('api/clear', { method: 'POST' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        alert(t.purge_done);
+        state.offset = 0;
+        loadLogs();
+        loadStats();
+        loadHosts();
+      } catch (err) {
+        alert('Failed to clear database: ' + err.message);
+      }
+    });
+
+    // Language switcher
+    document.getElementById('select-lang').addEventListener('change', (e) => {
+      applyLanguage(e.target.value);
+    });
+
+    // Live Stream toggle
     document.getElementById('btn-toggle-stream').addEventListener('click', () => {
       state.isStreaming = !state.isStreaming;
+      const t = i18n[currentLang] || i18n.en;
       const btn = document.getElementById('btn-toggle-stream');
       const dot = document.getElementById('live-indicator');
       const txt = document.getElementById('stream-text');
@@ -359,11 +623,11 @@
       if (state.isStreaming) {
         btn.className = 'btn-live';
         dot.style.display = 'inline-block';
-        txt.textContent = 'Live: Вкл';
+        txt.textContent = t.live_on;
       } else {
         btn.className = 'btn-paused';
         dot.style.display = 'none';
-        txt.textContent = 'Live: Пауза';
+        txt.textContent = t.live_paused;
       }
     });
 
@@ -381,23 +645,27 @@
       }
     });
 
-    document.getElementById('btn-export-csv').addEventListener('click', () => {
-      const params = new URLSearchParams({ format: 'csv' });
+    function getExportParams(format) {
+      const params = new URLSearchParams({ format });
       if (state.search) params.set('search', state.search);
       if (state.host) params.set('ip', state.host);
       if (state.severity) params.set('severity', state.severity);
-      window.location.href = 'api/export?' + params.toString();
+      const { from, to } = getTimeBounds();
+      if (from) params.set('from', from);
+      if (to) params.set('to', to);
+      return params.toString();
+    }
+
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      window.location.href = 'api/export?' + getExportParams('csv');
     });
 
     document.getElementById('btn-export-raw').addEventListener('click', () => {
-      const params = new URLSearchParams({ format: 'raw' });
-      if (state.search) params.set('search', state.search);
-      if (state.host) params.set('ip', state.host);
-      if (state.severity) params.set('severity', state.severity);
-      window.location.href = 'api/export?' + params.toString();
+      window.location.href = 'api/export?' + getExportParams('raw');
     });
 
     // Startup
+    applyLanguage(currentLang);
     loadLogs();
     loadStats();
     loadHosts();

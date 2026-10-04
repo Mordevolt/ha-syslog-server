@@ -93,6 +93,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("GET /api/stats", s.handleStats)
 	mux.HandleFunc("GET /api/hosts", s.handleHosts)
 	mux.HandleFunc("GET /api/export", s.handleExport)
+	mux.HandleFunc("POST /api/clear", s.handleClearLogs)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTPPort)
 	s.httpSrv = &http.Server{
@@ -238,6 +239,16 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 	if sVal, err := strconv.Atoi(q.Get("severity")); err == nil {
 		filter.Severity = &sVal
 	}
+	if fromStr := q.Get("from"); fromStr != "" {
+		if t, err := time.Parse(time.RFC3339, fromStr); err == nil {
+			filter.From = &t
+		}
+	}
+	if toStr := q.Get("to"); toStr != "" {
+		if t, err := time.Parse(time.RFC3339, toStr); err == nil {
+			filter.To = &t
+		}
+	}
 
 	filename := fmt.Sprintf("syslog_%s.%s", time.Now().Format("2006-01-02_150405"), format)
 	if format == "raw" {
@@ -250,6 +261,19 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
 	_ = s.database.ExportLogs(filter, w, format)
 }
+
+func (s *Server) handleClearLogs(w http.ResponseWriter, r *http.Request) {
+	if err := s.database.ClearAll(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"status":  "ok",
+		"message": "All logs cleared successfully",
+	})
+}
+
 
 func (s *Server) Stop() error {
 	if s.httpSrv != nil {

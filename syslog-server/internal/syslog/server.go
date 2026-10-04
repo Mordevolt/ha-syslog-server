@@ -28,6 +28,7 @@ type Server struct {
 	stopChan    chan struct{}
 	limiters    map[string]*rateLimiter
 	limiterMu   sync.Mutex
+	stopOnce    sync.Once
 }
 
 func NewServer(cfg *config.Config, database *db.DB, broadcaster Broadcaster) *Server {
@@ -166,8 +167,11 @@ func (s *Server) cleanupLimiters() {
 }
 
 func (s *Server) Stop() {
-	close(s.stopChan)
-	if s.conn != nil {
-		s.conn.Close()
-	}
+	s.stopOnce.Do(func() {
+		close(s.stopChan)
+		if s.conn != nil {
+			s.conn.Close()
+		}
+	})
 }
+

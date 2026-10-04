@@ -14,7 +14,7 @@ import (
 
 func main() {
 	log.Println("==================================================")
-	log.Println("   Home Assistant Syslog Server (Go) v1.0.0      ")
+	log.Println("   Home Assistant Syslog Server (Go) v1.0.1      ")
 	log.Println("==================================================")
 
 	// 1. Load Configuration
@@ -27,7 +27,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("[Main] Fatal: Failed to initialize database: %v", err)
 	}
-	defer database.Close()
 	log.Printf("[Main] SQLite database initialized at %s", cfg.DBPath)
 
 	// 3. Initialize SSE Broker for live tailing
@@ -38,7 +37,6 @@ func main() {
 	if err := syslogServer.Start(); err != nil {
 		log.Fatalf("[Main] Fatal: Failed to start Syslog UDP server: %v", err)
 	}
-	defer syslogServer.Stop()
 
 	// 5. Start HTTP Ingress Server (Dashboard & API)
 	webServer := web.NewServer(cfg, database, broker)

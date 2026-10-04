@@ -59,6 +59,7 @@ type DB struct {
 	startTime     time.Time
 	mu            sync.RWMutex
 	stopChan      chan struct{}
+	closeOnce     sync.Once
 }
 
 func Open(dbPath string, retentionDays, maxDBSizeMB int) (*DB, error) {
@@ -418,7 +419,38 @@ func (d *DB) ExportLogs(filter LogFilter, w io.Writer, format string) error {
 	return nil
 }
 
-func (d *DB) Close() error {
-	close(d.stopChan)
-	return d.db.Close()
+func (d *DB) ClearAll() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	// Drain any pending items currently in the buffer channel
+	for {
+		select {
+		case <-d.writeChan:
+		default:
+			goto drained
+		}
+	}
+drained:
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if _, err := d.db.ExecContext(ctx, "DELETE FROM syslog_entries;"); err != nil {
+		return fmt.Errorf("failed to clear syslog table: %w", err)
+	}
+
+	// Vacuum to reclaim disk space immediately
+	_, _ = d.db.ExecContext(ctx, "VACUUM;")
+	log.Printf("[DB] All syslog records cleared and database vacuumed manually")
+	return nil
 }
+
+func (d *DB) Close() error {
+	var err error
+	d.closeOnce.Do(func() {
+		close(d.stopChan)
+		err = d.db.Close()
+	})
+	return err
+}
+
