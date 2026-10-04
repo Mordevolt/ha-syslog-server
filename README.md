@@ -8,7 +8,7 @@
 [![Go](https://img.shields.io/badge/Language-Go%201.23-00ADD8.svg)](https://golang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[English](#english) | [Русский](#русский)
+[English](#english) | [Русский](#русский) | [Architecture Guide](ARCHITECTURE.md) | [Agent Guidelines](AGENTS.md)
 
 ---
 
