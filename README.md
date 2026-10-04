@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="syslog-server/logo.png" alt="Syslog Server Logo" width="650">
+  <img src="syslog-server/logo.svg" alt="Syslog Server Logo" width="650">
 </p>
 
 # Home Assistant Syslog Server Add-on
