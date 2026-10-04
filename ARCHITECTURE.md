@@ -47,29 +47,30 @@ flowchart TD
     end
 
     %% Flow connections
-    R1 -->|UDP Datagram| UDP
-    R2 -->|UDP Datagram| UDP
-    R3 -->|UDP Datagram| UDP
+    R1 -->|"UDP Datagram"| UDP
+    R2 -->|"UDP Datagram"| UDP
+    R3 -->|"UDP Datagram"| UDP
 
     UDP --> Allowlist
-    Allowlist -->|Allowed| Limiter
-    Allowlist -.->|Dropped| Blackhole1[("Drop")]
-    Limiter -->|Pass| Parser
-    Limiter -.->|Rate Exceeded| Blackhole2[("Drop")]
+    Allowlist -->|"Allowed"| Limiter
+    Allowlist -.->|"Dropped"| Blackhole1["Drop"]
+    Limiter -->|"Pass"| Parser
+    Limiter -.->|"Rate Exceeded"| Blackhole2["Drop"]
 
-    Parser -->|LogEntry| WriteQueue
-    Parser -->|LogEntry| SSEBroker
+    Parser -->|"LogEntry"| WriteQueue
+    Parser -->|"LogEntry"| SSEBroker
 
     WriteQueue --> BatchWriter
-    BatchWriter -->|WAL Transaction| SQLite
-    RetentionWorker -.->|Prune & Optimize| SQLite
+    BatchWriter -->|"WAL Transaction"| SQLite
+    RetentionWorker -.->|"Prune & Optimize"| SQLite
 
-    SQLite -->|Filtered Queries| RESTAPI
-    SSEBroker -->|Server-Sent Events| HTTPServer
+    SQLite -->|"Filtered Queries"| RESTAPI
+    SSEBroker -->|"Server-Sent Events"| HTTPServer
 
-    IngressProxy -->|Reverse Proxy / Auth| HTTPServer
+    IngressProxy -->|"Reverse Proxy / Auth"| HTTPServer
     HTTPServer --> IngressProxy
-    UserBrowser <-->|Ingress Session (TLS)| IngressProxy
+    UserBrowser -->|"Ingress Session (TLS)"| IngressProxy
+    IngressProxy -->|"Web UI Response"| UserBrowser
 ```
 
 ---
@@ -83,10 +84,10 @@ sequenceDiagram
     participant UDP as UDP Listener
     participant Filter as Security & Rate Limiter
     participant Parser as RFC Parser
-    participant Queue as Memory Buffer (writeChan)
+    participant Queue as Memory Buffer
     participant Broker as SSE Broker
     participant Batch as Batch Writer
-    participant DB as SQLite (syslog.db)
+    participant DB as SQLite DB
     participant Client as Web UI (Browser)
 
     Router->>UDP: Send UDP syslog packet (RFC 3164/5424)
@@ -95,9 +96,9 @@ sequenceDiagram
         Filter-->>UDP: Drop packet silently
     else Passed
         Filter->>Parser: Parse raw bytes into LogEntry
-        Parser->>Broker: Broadcast(LogEntry)
-        Broker-->>Client: SSE Event data: JSON(LogEntry)
-        Parser->>Queue: Push to writeChan (non-blocking)
+        Parser->>Broker: Broadcast LogEntry
+        Broker-->>Client: SSE Event data with JSON
+        Parser->>Queue: Push to writeChan
     end
 
     Note over Batch,DB: Every 2 seconds OR when 100 entries accumulate
@@ -198,11 +199,11 @@ flowchart LR
     G6["goroutine: HTTP Server"]
     G7["goroutine: SSE Client Streamers (1 per tab)"]
 
-    G2 -->|writeChan| G4
-    G2 -->|Broadcast()| G7
-    G4 -->|Write Lock| DB[("SQLite DB")]
-    G5 -->|Write Lock| DB
-    G6 -->|Read Lock| DB
+    G2 -->|"writeChan"| G4
+    G2 -->|"Broadcast"| G7
+    G4 -->|"Write Lock"| DB["SQLite DB"]
+    G5 -->|"Write Lock"| DB
+    G6 -->|"Read Lock"| DB
 ```
 
 | Goroutine | Synchronization Primitive | Responsibility |
