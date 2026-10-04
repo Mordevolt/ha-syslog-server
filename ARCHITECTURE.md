@@ -103,7 +103,7 @@ sequenceDiagram
 
     Note over Batch,DB: Every 2 seconds OR when 100 entries accumulate
     Batch->>Queue: Drain batch entries
-    Batch->>DB: BEGIN IMMEDIATE TRANSACTION; Insert Batch; COMMIT;
+    Batch->>DB: Insert batch into SQLite transaction
 ```
 
 ---
