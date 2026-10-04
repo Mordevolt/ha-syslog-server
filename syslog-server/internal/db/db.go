@@ -38,6 +38,8 @@ type LogFilter struct {
 	To       *time.Time
 	Limit    int
 	Offset   int
+	OrderBy  string
+	OrderDir string
 }
 
 type Stats struct {
@@ -299,14 +301,33 @@ func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
 		offset = 0
 	}
 
+	orderCol := "id"
+	switch filter.OrderBy {
+	case "timestamp":
+		orderCol = "timestamp"
+	case "severity":
+		orderCol = "severity"
+	case "source_ip", "ip":
+		orderCol = "source_ip"
+	case "tag":
+		orderCol = "tag"
+	case "hostname", "host":
+		orderCol = "hostname"
+	}
+
+	orderDir := "DESC"
+	if strings.ToLower(filter.OrderDir) == "asc" {
+		orderDir = "ASC"
+	}
+
 	queryArgs := append(args, limit, offset)
 	dataQuery := fmt.Sprintf(`
 		SELECT id, timestamp, facility, severity, severity_name, source_ip, hostname, tag, message
 		FROM syslog_entries
 		%s
-		ORDER BY id DESC
+		ORDER BY %s %s
 		LIMIT ? OFFSET ?
-	`, whereClause)
+	`, whereClause, orderCol, orderDir)
 
 	rows, err := d.db.Query(dataQuery, queryArgs...)
 	if err != nil {

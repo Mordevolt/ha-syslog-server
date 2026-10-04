@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+- **Interactive Column Sorting:** Click any column header (`Timestamp`, `Level`, `Router / IP`, `Tag / Process`) to sort ascending or descending (▲/▼). Allows sorting logs from oldest to newest and vice versa.
+- **SQL Sorting Engine:** Added dynamic, SQL-injection safe `order_by` and `order_dir` parameters to backend query and export APIs.
+
 ## 1.0.2
 - **Fixed Timestamp Parsing & Display:** Resolved SQLite timestamp scanning where dates displayed as `01.01.1` (year 1) due to RFC3339 layout mismatch; added multi-format driver parser (`parseDBTime`) and local timezone preservation (`time.Local`).
 - **Enhanced Syslog RFC Parser:** Added full RFC 5424 ISO timestamp support, Russian month abbreviations, and single-digit day handling.

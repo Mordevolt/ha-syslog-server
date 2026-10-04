@@ -127,6 +127,8 @@ func (s *Server) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 		SourceIP: q.Get("ip"),
 		Hostname: q.Get("host"),
 		Tag:      q.Get("tag"),
+		OrderBy:  q.Get("order_by"),
+		OrderDir: q.Get("order_dir"),
 		Limit:    100,
 		Offset:   0,
 	}
@@ -235,6 +237,8 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 		SourceIP: q.Get("ip"),
 		Hostname: q.Get("host"),
 		Tag:      q.Get("tag"),
+		OrderBy:  q.Get("order_by"),
+		OrderDir: q.Get("order_dir"),
 	}
 	if sVal, err := strconv.Atoi(q.Get("severity")); err == nil {
 		filter.Severity = &sVal

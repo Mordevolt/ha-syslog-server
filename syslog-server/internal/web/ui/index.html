@@ -67,6 +67,9 @@
     main { flex: 1; overflow-y: auto; padding: 0; background: #0b0f19; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 0.82rem; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { position: sticky; top: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 8px 12px; color: var(--text-muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; z-index: 10; }
+    th[data-sort] { cursor: pointer; user-select: none; transition: background-color 0.15s, color 0.15s; }
+    th[data-sort]:hover { color: #fff; background-color: #243044; }
+    .sort-icon { font-size: 0.65rem; margin-left: 4px; display: inline-block; vertical-align: middle; color: #38bdf8; }
     td { padding: 6px 12px; border-bottom: 1px solid #1f2937; vertical-align: top; white-space: nowrap; }
     tr:hover { background-color: #172033; }
     td.msg-cell { white-space: pre-wrap; word-break: break-all; min-width: 300px; color: #e2e8f0; }
@@ -95,7 +98,7 @@
     <div class="brand">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
       <span id="txt-app-title">Syslog Server</span>
-      <span class="version-tag">v1.0.2</span>
+      <span class="version-tag">v1.0.3</span>
     </div>
 
     <div class="stats-container">
@@ -171,10 +174,10 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 160px;" id="th-time">Timestamp</th>
-          <th style="width: 90px;" id="th-level">Level</th>
-          <th style="width: 140px;" id="th-host">Router / IP</th>
-          <th style="width: 130px;" id="th-tag">Tag / Process</th>
+          <th style="width: 170px;" data-sort="timestamp"><span id="th-time">Timestamp</span> <span class="sort-icon" id="sort-timestamp">▼</span></th>
+          <th style="width: 90px;" data-sort="severity"><span id="th-level">Level</span> <span class="sort-icon" id="sort-severity"></span></th>
+          <th style="width: 170px;" data-sort="source_ip"><span id="th-host">Router / IP</span> <span class="sort-icon" id="sort-source_ip"></span></th>
+          <th style="width: 130px;" data-sort="tag"><span id="th-tag">Tag / Process</span> <span class="sort-icon" id="sort-tag"></span></th>
           <th id="th-msg">Message</th>
         </tr>
       </thead>
@@ -293,7 +296,9 @@
       timeRange: 'all',
       customFrom: '',
       customTo: '',
-      retentionDays: 14
+      retentionDays: 14,
+      orderBy: 'timestamp',
+      orderDir: 'desc'
     };
 
     function applyLanguage(lang) {
@@ -424,6 +429,8 @@
       if (state.search) params.set('search', state.search);
       if (state.host) params.set('ip', state.host);
       if (state.severity) params.set('severity', state.severity);
+      if (state.orderBy) params.set('order_by', state.orderBy);
+      if (state.orderDir) params.set('order_dir', state.orderDir);
 
       const { from, to } = getTimeBounds();
       if (from) params.set('from', from);
@@ -494,8 +501,9 @@
 
       state.eventSource.onmessage = (event) => {
         if (!state.isStreaming) return;
-        // If viewing historical window, do not inject live logs
+        // If viewing historical window or custom sort, do not inject live logs into table
         if (state.timeRange !== 'all') return;
+        if (state.orderBy !== 'timestamp' || state.orderDir !== 'desc') return;
 
         try {
           const entry = JSON.parse(event.data);
@@ -666,6 +674,8 @@
       if (state.search) params.set('search', state.search);
       if (state.host) params.set('ip', state.host);
       if (state.severity) params.set('severity', state.severity);
+      if (state.orderBy) params.set('order_by', state.orderBy);
+      if (state.orderDir) params.set('order_dir', state.orderDir);
       const { from, to } = getTimeBounds();
       if (from) params.set('from', from);
       if (to) params.set('to', to);
@@ -680,8 +690,40 @@
       window.location.href = 'api/export?' + getExportParams('raw');
     });
 
+    // Column sorting UI logic
+    function updateSortIcons() {
+      document.querySelectorAll('th[data-sort]').forEach(th => {
+        const col = th.getAttribute('data-sort');
+        const icon = th.querySelector('.sort-icon');
+        if (!icon) return;
+        if (state.orderBy === col) {
+          icon.textContent = state.orderDir === 'asc' ? '▲' : '▼';
+          th.style.color = '#38bdf8';
+        } else {
+          icon.textContent = '';
+          th.style.color = '';
+        }
+      });
+    }
+
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort');
+        if (state.orderBy === col) {
+          state.orderDir = state.orderDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.orderBy = col;
+          state.orderDir = (col === 'timestamp') ? 'desc' : 'asc';
+        }
+        updateSortIcons();
+        state.offset = 0;
+        loadLogs();
+      });
+    });
+
     // Startup
     applyLanguage(currentLang);
+    updateSortIcons();
     loadLogs();
     loadStats();
     loadHosts();
