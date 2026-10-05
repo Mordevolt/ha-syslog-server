@@ -180,7 +180,7 @@ func (d *DB) writeBatch(entries []*LogEntry) error {
 
 	for _, e := range entries {
 		_, err := stmt.ExecContext(ctx,
-			e.Timestamp.Format("2006-01-02 15:04:05"),
+			e.Timestamp.UTC().Format("2006-01-02 15:04:05"),
 			e.Facility,
 			e.Severity,
 			e.SeverityName,
@@ -293,7 +293,7 @@ func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
 
 	// Select rows
 	limit := filter.Limit
-	if limit <= 0 || limit > 1000 {
+	if limit <= 0 || limit > 5000 {
 		limit = 100
 	}
 	offset := filter.Offset
@@ -351,18 +351,18 @@ func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
 
 func parseDBTime(v interface{}) time.Time {
 	if v == nil {
-		return time.Now()
+		return time.Now().UTC()
 	}
 	switch val := v.(type) {
 	case time.Time:
 		if val.Year() < 2000 {
-			return time.Now()
+			return time.Now().UTC()
 		}
-		return val
+		return val.UTC()
 	case string:
 		val = strings.TrimSpace(val)
 		if val == "" {
-			return time.Now()
+			return time.Now().UTC()
 		}
 		layouts := []string{
 			time.RFC3339Nano,
@@ -377,15 +377,15 @@ func parseDBTime(v interface{}) time.Time {
 		for _, layout := range layouts {
 			if t, err := time.Parse(layout, val); err == nil {
 				if t.Year() < 2000 {
-					return time.Now()
+					return time.Now().UTC()
 				}
-				return t
+				return t.UTC()
 			}
 		}
 	case []byte:
 		return parseDBTime(string(val))
 	}
-	return time.Now()
+	return time.Now().UTC()
 }
 
 func (d *DB) GetStats() (*Stats, error) {

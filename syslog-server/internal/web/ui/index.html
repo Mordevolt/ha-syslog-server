@@ -98,7 +98,7 @@
     <div class="brand">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
       <span id="txt-app-title">Syslog Server</span>
-      <span class="version-tag">v1.0.3</span>
+      <span class="version-tag">v1.0.4</span>
     </div>
 
     <div class="stats-container">
@@ -166,6 +166,14 @@
       <input type="datetime-local" id="time-to" title="End Time">
       <button id="btn-apply-custom-time">Apply</button>
     </div>
+
+    <select id="select-limit" title="Rows per page">
+      <option value="50">50 / page</option>
+      <option value="100" selected>100 / page</option>
+      <option value="250">250 / page</option>
+      <option value="500">500 / page</option>
+      <option value="1000">1000 / page</option>
+    </select>
 
     <button id="btn-refresh">🔄 <span id="txt-refresh">Refresh</span></button>
   </div>
@@ -237,7 +245,12 @@
         prev: "◀ Prev",
         next: "Next ▶",
         confirm_purge: "⚠️ WARNING: Are you sure you want to permanently delete ALL syslog records from the database?\n\nThis cannot be undone!",
-        purge_done: "Database cleared successfully."
+        purge_done: "Database cleared successfully.",
+        limit_50: "50 / page",
+        limit_100: "100 / page",
+        limit_250: "250 / page",
+        limit_500: "500 / page",
+        limit_1000: "1000 / page"
       },
       ru: {
         app_title: "Syslog Сервер",
@@ -278,17 +291,24 @@
         prev: "◀ Назад",
         next: "Вперед ▶",
         confirm_purge: "⚠️ ВНИМАНИЕ: Вы уверены, что хотите полностью очистить базу данных Syslog?\n\nВсе сохранённые логи будут безвозвратно удалены!",
-        purge_done: "База данных успешно очищена."
+        purge_done: "База данных успешно очищена.",
+        limit_50: "50 на стр.",
+        limit_100: "100 на стр.",
+        limit_250: "250 на стр.",
+        limit_500: "500 на стр.",
+        limit_1000: "1000 на стр."
       }
     };
 
     let currentLang = localStorage.getItem('syslog_lang') || 'en';
+    const savedLimit = parseInt(localStorage.getItem('syslog_limit'), 10);
+    const initialLimit = [50, 100, 250, 500, 1000].includes(savedLimit) ? savedLimit : 100;
 
     const state = {
       isStreaming: true,
       eventSource: null,
       offset: 0,
-      limit: 100,
+      limit: initialLimit,
       total: 0,
       search: '',
       host: '',
@@ -349,6 +369,16 @@
 
       document.getElementById('btn-prev').textContent = t.prev;
       document.getElementById('btn-next').textContent = t.next;
+
+      const limitSel = document.getElementById('select-limit');
+      if (limitSel) {
+        limitSel.options[0].textContent = t.limit_50;
+        limitSel.options[1].textContent = t.limit_100;
+        limitSel.options[2].textContent = t.limit_250;
+        limitSel.options[3].textContent = t.limit_500;
+        limitSel.options[4].textContent = t.limit_1000;
+        limitSel.value = String(state.limit);
+      }
 
       updatePagination();
     }
@@ -568,6 +598,13 @@
 
     document.getElementById('select-severity').addEventListener('change', (e) => {
       state.severity = e.target.value;
+      state.offset = 0;
+      loadLogs();
+    });
+
+    document.getElementById('select-limit').addEventListener('change', (e) => {
+      state.limit = parseInt(e.target.value, 10) || 100;
+      localStorage.setItem('syslog_limit', state.limit);
       state.offset = 0;
       loadLogs();
     });

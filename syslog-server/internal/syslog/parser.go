@@ -81,20 +81,21 @@ func parseISO8601Timestamp(timeStr string, now time.Time) time.Time {
 	layouts := []string{
 		time.RFC3339Nano,
 		time.RFC3339,
+		"2006-01-02T15:04:05Z07:00",
 		"2006-01-02T15:04:05",
 		"2006-01-02 15:04:05",
 	}
 	for _, l := range layouts {
 		if t, err := time.Parse(l, timeStr); err == nil {
-			return t
+			return t.UTC()
 		}
 	}
-	return now
+	return now.UTC()
 }
 
 func ParseSyslogPacket(raw []byte, remoteIP string) *db.LogEntry {
 	msgStr := strings.TrimSpace(string(raw))
-	now := time.Now()
+	now := time.Now().UTC()
 
 	entry := &db.LogEntry{
 		Timestamp:    now,
@@ -138,7 +139,9 @@ func ParseSyslogPacket(raw []byte, remoteIP string) *db.LogEntry {
 		entry.Severity = pri % 8
 		entry.SeverityName = SeverityName(entry.Severity)
 
-		entry.Timestamp = parseBSDTimestamp(matches[2], now)
+		// For RFC 3164 (BSD), packets are received in real-time over UDP without timezone.
+		// Using the NTP-synchronized receipt timestamp now.UTC() prevents double-offset skew.
+		entry.Timestamp = now.UTC()
 		entry.Hostname = matches[3]
 		entry.Tag = matches[4]
 		entry.Message = matches[6]

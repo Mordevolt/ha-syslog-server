@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.4
+- **Fixed Timestamp Discrepancy & Timezones:** Unified database storage and live SSE streaming to canonical UTC packet arrival timestamps, preventing double-offset addition (+3h skew) in local browser rendering.
+- **Configurable Page Size:** Added a dropdown selector to display 50, 100, 250, 500, or 1000 logs per page, persisted in local storage.
+- **Extended Query Limit:** Increased backend query limit up to 5000 records for larger batched views and exports.
+
 ## 1.0.3
 - **Interactive Column Sorting:** Click any column header (`Timestamp`, `Level`, `Router / IP`, `Tag / Process`) to sort ascending or descending (▲/▼). Allows sorting logs from oldest to newest and vice versa.
 - **SQL Sorting Engine:** Added dynamic, SQL-injection safe `order_by` and `order_dir` parameters to backend query and export APIs.

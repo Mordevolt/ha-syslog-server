@@ -1,6 +1,6 @@
 name: "Syslog Server"
 slug: "syslog_server"
-version: "1.0.3"
+version: "1.0.4"
 description: "Ultra-lightweight Syslog Server with Web UI (Ingress), Auto-Retention, and Security Controls"
 url: "https://github.com/Mordevolt/ha-syslog-server"
 arch:
