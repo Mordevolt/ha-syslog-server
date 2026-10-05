@@ -98,8 +98,12 @@ func (s *Server) Start() error {
 
 	// AI Agent Endpoints (REST & MCP)
 	mux.HandleFunc("GET /api/agent/summary", s.wrapAgentEndpoint(s.handleAgentSummary))
+	mux.HandleFunc("OPTIONS /api/agent/summary", s.wrapAgentEndpoint(s.handleAgentSummary))
 	mux.HandleFunc("GET /api/agent/tools", s.wrapAgentEndpoint(s.handleAgentTools))
-	mux.HandleFunc("/mcp", s.wrapAgentEndpoint(s.handleMCP))
+	mux.HandleFunc("OPTIONS /api/agent/tools", s.wrapAgentEndpoint(s.handleAgentTools))
+	mux.HandleFunc("GET /mcp", s.wrapAgentEndpoint(s.handleMCP))
+	mux.HandleFunc("POST /mcp", s.wrapAgentEndpoint(s.handleMCP))
+	mux.HandleFunc("OPTIONS /mcp", s.wrapAgentEndpoint(s.handleMCP))
 
 	addr := fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTPPort)
 	s.httpSrv = &http.Server{
