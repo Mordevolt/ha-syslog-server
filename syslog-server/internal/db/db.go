@@ -52,6 +52,21 @@ type Stats struct {
 	UptimeSec     int64   `json:"uptime_sec"`
 }
 
+type TagCount struct {
+	Tag   string `json:"tag"`
+	Count int64  `json:"count"`
+}
+
+type AgentSummary struct {
+	WindowMinutes         int         `json:"window_minutes"`
+	TotalRecords          int64       `json:"total_records"`
+	ErrorCount            int64       `json:"error_count"`
+	WarningCount          int64       `json:"warning_count"`
+	TopErrorTags          []TagCount  `json:"top_error_tags"`
+	AffectedHosts         []string    `json:"affected_hosts"`
+	RecentCriticalSamples []*LogEntry `json:"recent_critical_samples"`
+}
+
 type DB struct {
 	db            *sql.DB
 	dbPath        string
@@ -501,6 +516,76 @@ drained:
 	_, _ = d.db.ExecContext(ctx, "VACUUM;")
 	log.Printf("[DB] All syslog records cleared and database vacuumed manually")
 	return nil
+}
+
+func (d *DB) GetAgentSummary(minutes int) (*AgentSummary, error) {
+	if minutes <= 0 {
+		minutes = 60
+	}
+	if minutes > 1440*7 { // maximum 7 days
+		minutes = 1440 * 7
+	}
+
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+
+	cutoff := time.Now().UTC().Add(-time.Duration(minutes) * time.Minute).Format("2006-01-02 15:04:05")
+
+	summary := &AgentSummary{
+		WindowMinutes:         minutes,
+		TopErrorTags:          []TagCount{},
+		AffectedHosts:         []string{},
+		RecentCriticalSamples: []*LogEntry{},
+	}
+
+	// 1. Total records in time window
+	_ = d.db.QueryRow("SELECT COUNT(*) FROM syslog_entries WHERE timestamp >= ?", cutoff).Scan(&summary.TotalRecords)
+
+	// 2. Errors (severity <= 3: emerg, alert, crit, err)
+	_ = d.db.QueryRow("SELECT COUNT(*) FROM syslog_entries WHERE timestamp >= ? AND severity <= 3", cutoff).Scan(&summary.ErrorCount)
+
+	// 3. Warnings (severity = 4)
+	_ = d.db.QueryRow("SELECT COUNT(*) FROM syslog_entries WHERE timestamp >= ? AND severity = 4", cutoff).Scan(&summary.WarningCount)
+
+	// 4. Top error tags (processes causing errors)
+	tagRows, err := d.db.Query("SELECT tag, COUNT(*) as c FROM syslog_entries WHERE timestamp >= ? AND severity <= 3 AND tag != '' GROUP BY tag ORDER BY c DESC LIMIT 10", cutoff)
+	if err == nil {
+		for tagRows.Next() {
+			var tc TagCount
+			if err := tagRows.Scan(&tc.Tag, &tc.Count); err == nil {
+				summary.TopErrorTags = append(summary.TopErrorTags, tc)
+			}
+		}
+		tagRows.Close()
+	}
+
+	// 5. Affected hosts with errors
+	hostRows, err := d.db.Query("SELECT DISTINCT source_ip FROM syslog_entries WHERE timestamp >= ? AND severity <= 3 AND source_ip != '' LIMIT 20", cutoff)
+	if err == nil {
+		for hostRows.Next() {
+			var h string
+			if err := hostRows.Scan(&h); err == nil {
+				summary.AffectedHosts = append(summary.AffectedHosts, h)
+			}
+		}
+		hostRows.Close()
+	}
+
+	// 6. Recent critical samples (up to 10 latest errors)
+	sampleRows, err := d.db.Query("SELECT id, timestamp, facility, severity, severity_name, hostname, source_ip, tag, message FROM syslog_entries WHERE timestamp >= ? AND severity <= 3 ORDER BY timestamp DESC LIMIT 10", cutoff)
+	if err == nil {
+		for sampleRows.Next() {
+			var e LogEntry
+			var rawTime interface{}
+			if err := sampleRows.Scan(&e.ID, &rawTime, &e.Facility, &e.Severity, &e.SeverityName, &e.Hostname, &e.SourceIP, &e.Tag, &e.Message); err == nil {
+				e.Timestamp = parseDBTime(rawTime)
+				summary.RecentCriticalSamples = append(summary.RecentCriticalSamples, &e)
+			}
+		}
+		sampleRows.Close()
+	}
+
+	return summary, nil
 }
 
 func (d *DB) Close() error {

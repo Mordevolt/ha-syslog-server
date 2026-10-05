@@ -14,3 +14,9 @@ configuration:
   allowed_hosts:
     name: "Allowed IP Addresses or Subnets"
     description: "List of trusted IP addresses or CIDR subnets allowed to send logs (e.g. 192.168.1.1, 192.168.1.0/24). If empty, logs from all local network IPs are accepted."
+  enable_agent_api:
+    name: "Enable AI Agent API"
+    description: "Enables REST and MCP endpoints for local AI agents (e.g. Hermes). Disabled by default. Requires setting an API Secret Token if port 8099 is exposed to the local network."
+  api_token:
+    name: "API Secret Token"
+    description: "Bearer token required for AI agents and external scripts to authenticate against the API (leave blank for local development or if accessed strictly via Ingress)."

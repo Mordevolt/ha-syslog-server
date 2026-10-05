@@ -51,6 +51,14 @@ In your router's web administration panel, navigate to the System Log / Syslog s
 | `max_db_size_mb` | `500` | Maximum SQLite database size in megabytes. |
 | `rate_limit_per_sec` | `100` | Max messages per second accepted per IP address. |
 | `allowed_hosts` | `[]` | List of trusted IP addresses or CIDR subnets (e.g., `192.168.1.1`, `192.168.1.0/24`). If empty, all local network IPs are allowed. |
+| `enable_agent_api` | `false` | Enables REST & MCP endpoints for local AI agents (e.g. Hermes). |
+| `api_token` | `""` | Secret Bearer token required for external LAN / agent access. |
+
+### 🤖 Local AI Agent Integration (Hermes / MCP)
+The add-on supports direct integration with local LLM agents:
+* **Health Digest:** `GET /api/agent/summary?minutes=60` pre-aggregates errors and anomalies into < 500 tokens.
+* **MCP Protocol:** Connect agents to `http://<HA_IP>:8099/mcp` for native tool calling.
+* **Setup:** In add-on Configuration, set `enable_agent_api: true`, set an `api_token`, and map port `8099` in the Network tab.
 
 ---
 
@@ -69,3 +77,4 @@ In your router's web administration panel, navigate to the System Log / Syslog s
 - **Ручная очистка базы:** возможность очистить базу данных в один клик из веб-интерфейса.
 - **Многоуровневая безопасность:** белый список IP/CIDR, ограничение частоты запросов (Rate Limiting), лимит на размер пакета.
 - **Двуязычный интерфейс:** английский по умолчанию с возможностью переключения на русский в заголовке панели.
+- **Интеграция с ИИ-агентами (Hermes / MCP):** готовые компактные эндпоинты для анализа ошибок роутеров локальными моделями и протокол MCP. По умолчанию выключено (`enable_agent_api: false`). Доступ защищается токеном `api_token`.

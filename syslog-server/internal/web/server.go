@@ -86,14 +86,19 @@ func NewServer(cfg *config.Config, database *db.DB, broker *SSEBroker) *Server {
 func (s *Server) Start() error {
 	mux := http.NewServeMux()
 
-	// Ingress Web Dashboard
+	// Ingress Web Dashboard & standard API
 	mux.HandleFunc("GET /", s.handleUI)
-	mux.HandleFunc("GET /api/logs", s.handleGetLogs)
-	mux.HandleFunc("GET /api/stream", s.handleStream)
-	mux.HandleFunc("GET /api/stats", s.handleStats)
-	mux.HandleFunc("GET /api/hosts", s.handleHosts)
-	mux.HandleFunc("GET /api/export", s.handleExport)
+	mux.HandleFunc("GET /api/logs", s.wrapAPIEndpoint(s.handleGetLogs))
+	mux.HandleFunc("GET /api/stream", s.wrapAPIEndpoint(s.handleStream))
+	mux.HandleFunc("GET /api/stats", s.wrapAPIEndpoint(s.handleStats))
+	mux.HandleFunc("GET /api/hosts", s.wrapAPIEndpoint(s.handleHosts))
+	mux.HandleFunc("GET /api/export", s.wrapAPIEndpoint(s.handleExport))
 	mux.HandleFunc("POST /api/clear", s.handleClearLogs)
+
+	// AI Agent Endpoints (REST & MCP)
+	mux.HandleFunc("GET /api/agent/summary", s.wrapAgentEndpoint(s.handleAgentSummary))
+	mux.HandleFunc("GET /api/agent/tools", s.wrapAgentEndpoint(s.handleAgentTools))
+	mux.HandleFunc("/mcp", s.wrapAgentEndpoint(s.handleMCP))
 
 	addr := fmt.Sprintf("0.0.0.0:%d", s.cfg.HTTPPort)
 	s.httpSrv = &http.Server{
@@ -103,8 +108,95 @@ func (s *Server) Start() error {
 		WriteTimeout: 0, // 0 for streaming SSE
 	}
 
-	log.Printf("[Web] Ingress dashboard listening on http://%s", addr)
+	if s.cfg.EnableAgentAPI {
+		log.Printf("[Web] AI Agent API is ENABLED (REST: /api/agent/summary, MCP: /mcp)")
+	}
+	log.Printf("[Web] HTTP dashboard listening on http://%s", addr)
 	return s.httpSrv.ListenAndServe()
+}
+
+func (s *Server) checkAuth(r *http.Request) bool {
+	// If accessed through Home Assistant Ingress, trust Supervisor proxy
+	if r.Header.Get("X-Ingress-Path") != "" {
+		return true
+	}
+
+	// If no token is configured, allow
+	if s.cfg.APIToken == "" {
+		return true
+	}
+
+	// Check Authorization header: "Bearer <token>"
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "" {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") && parts[1] == s.cfg.APIToken {
+			return true
+		}
+	}
+
+	// Check X-API-Key header
+	if r.Header.Get("X-API-Key") == s.cfg.APIToken {
+		return true
+	}
+
+	// Check query param "?token=<token>"
+	if r.URL.Query().Get("token") == s.cfg.APIToken {
+		return true
+	}
+
+	return false
+}
+
+func (s *Server) wrapAPIEndpoint(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-API-Key")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if s.cfg.APIToken != "" && !s.checkAuth(r) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"error": "Unauthorized: Invalid or missing API token"}`))
+			return
+		}
+
+		handler(w, r)
+	}
+}
+
+func (s *Server) wrapAgentEndpoint(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-API-Key")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if !s.cfg.EnableAgentAPI {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte(`{"error": "AI Agent API is disabled in add-on configuration (enable_agent_api: false)"}`))
+			return
+		}
+
+		if !s.checkAuth(r) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(`{"error": "Unauthorized: Invalid or missing API token"}`))
+			return
+		}
+
+		handler(w, r)
+	}
 }
 
 func (s *Server) handleUI(w http.ResponseWriter, r *http.Request) {
@@ -267,6 +359,20 @@ func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleClearLogs(w http.ResponseWriter, r *http.Request) {
+	// If outside Ingress, require configured APIToken (prevent unauthenticated LAN wipe)
+	if r.Header.Get("X-Ingress-Path") == "" && s.cfg.APIToken == "" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte(`{"error": "Direct LAN database purge requires api_token to be configured"}`))
+		return
+	}
+	if !s.checkAuth(r) {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(`{"error": "Unauthorized: Invalid or missing API token"}`))
+		return
+	}
+
 	if err := s.database.ClearAll(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

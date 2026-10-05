@@ -14,13 +14,13 @@ import (
 
 func main() {
 	log.Println("==================================================")
-	log.Println("   Home Assistant Syslog Server (Go) v1.0.4      ")
+	log.Println("   Home Assistant Syslog Server (Go) v1.0.5      ")
 	log.Println("==================================================")
 
 	// 1. Load Configuration
 	cfg := config.LoadConfig()
-	log.Printf("[Main] Config: SyslogPort=%d, Retention=%d days, MaxDBSize=%d MB, RateLimit=%d/s",
-		cfg.SyslogPort, cfg.RetentionDays, cfg.MaxDBSizeMB, cfg.RateLimitPerSec)
+	log.Printf("[Main] Config: SyslogPort=%d, Retention=%d days, MaxDBSize=%d MB, RateLimit=%d/s, AgentAPI=%t",
+		cfg.SyslogPort, cfg.RetentionDays, cfg.MaxDBSizeMB, cfg.RateLimitPerSec, cfg.EnableAgentAPI)
 
 	// 2. Initialize Database with WAL & Batching
 	database, err := db.Open(cfg.DBPath, cfg.RetentionDays, cfg.MaxDBSizeMB)

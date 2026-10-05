@@ -16,6 +16,8 @@ type Config struct {
 	AllowedHosts    []string `json:"allowed_hosts"`
 	DBPath          string   `json:"db_path"`
 	HTTPPort        int      `json:"http_port"`
+	EnableAgentAPI  bool     `json:"enable_agent_api"`
+	APIToken        string   `json:"api_token"`
 
 	allowedIPs []*net.IPNet
 }
@@ -29,6 +31,8 @@ func LoadConfig() *Config {
 		AllowedHosts:    []string{},
 		DBPath:          "/data/syslog.db",
 		HTTPPort:        8099,
+		EnableAgentAPI:  false,
+		APIToken:        "",
 	}
 
 	// Home Assistant options file
@@ -61,6 +65,7 @@ func LoadConfig() *Config {
 	if cfg.HTTPPort <= 0 {
 		cfg.HTTPPort = 8099
 	}
+	cfg.APIToken = strings.TrimSpace(cfg.APIToken)
 
 	cfg.compileAllowedHosts()
 	return cfg

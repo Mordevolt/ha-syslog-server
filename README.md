@@ -73,7 +73,21 @@ retention_days: 14        # Number of days to store logs
 max_db_size_mb: 500       # Max SQLite database file size (MB)
 rate_limit_per_sec: 100   # Max messages per second per IP
 allowed_hosts: []         # Allowed IP list or CIDR subnets (e.g. ["192.168.1.1", "192.168.1.0/24"])
+enable_agent_api: false   # Enable REST & MCP endpoints for AI Agents (Hermes)
+api_token: ""             # Secret Bearer token for external API access
 ```
+
+---
+
+### 🤖 Local AI Agent Integration (Hermes / MCP)
+
+The add-on provides high-signal, context-efficient endpoints and Model Context Protocol (MCP) support for local AI agents such as **Hermes**:
+
+- **Health Digest:** `GET /api/agent/summary?minutes=60` pre-aggregates errors and anomalies into < 500 tokens (preventing context overflow).
+- **Model Context Protocol (MCP):** Connect Hermes or other AI tools to `http://<HA_IP>:8099/mcp` for native tool calling (`get_syslog_health`, `search_syslog`, `get_monitored_hosts`, `get_server_stats`).
+- **Security First:** Disabled by default (`enable_agent_api: false`). External LAN access requires an `api_token` and manual port mapping in Home Assistant.
+
+👉 See [AI Agent Integration Guide](docs/HERMES_INTEGRATION.md) for full configuration, Python snippets, and tool schemas.
 
 ---
 
@@ -87,13 +101,24 @@ allowed_hosts: []         # Allowed IP list or CIDR subnets (e.g. ["192.168.1.1"
 - ⚡ **Ультранизкое потребление ресурсов:** всего **~5–12 МБ RAM** и практически **0% CPU** (написан на Go).
 - 🛡️ **Защита накопителя и базы данных Home Assistant:** логи хранятся в изолированной базе SQLite с режимом WAL и батчингом в памяти, не изнашивая накопитель и не раздувая `home-assistant_v2.db`.
 - 🌐 **Встроенный интерфейс Ingress:** открывается прямо в боковом меню Home Assistant под встроенной авторизацией и SSL.
+- 🤖 **Интеграция с локальными ИИ-агентами (Hermes / MCP):** готовые компактные эндпоинты анализа сетевых сбоев и поддержка протокола MCP.
 - 🔴 **Live Stream в реальном времени:** отслеживание событий Wi-Fi (роуминг 802.11k/v/r, подключение клиентов, ошибки, DHCP) на лету через Server-Sent Events (SSE).
 - 🕒 **Фильтрация по времени:** быстрый выбор интервалов (15 мин, 1 час, 6 часов, 24 часа, 7 дней) или произвольный период дат.
 - 🗑️ **Ручная очистка базы данных:** кнопка мгновенной очистки и сжатия (vacuum) базы прямо из интерфейса.
-- 🔒 **Многоуровневая безопасность:** белый список IP-адресов роутеров (IP Allowlist / CIDR), защита от флуда (Rate Limiting), лимит размера пакетов (до 4 КБ).
+- 🔒 **Многоуровневая безопасность:** белый список IP-адресов роутеров (IP Allowlist / CIDR), защита от флуда (Rate Limiting), лимит размера пакетов (до 4 КБ), авторизация по токену.
 - 🧹 **Автоматическая ротация:** удаление логов старше заданного количества дней (`retention_days`) и жесткий контроль максимального размера базы (`max_db_size_mb`).
 - 📊 **Экспорт данных:** скачивание отфильтрованных логов в один клик в форматах **CSV** или **RAW TXT**.
 - 🌐 **Двуязычный интерфейс:** английский по умолчанию с возможностью переключения на русский в заголовке страницы.
+
+---
+
+### 🤖 Подключение ИИ-агента (Hermes)
+
+- **Компактная сводка:** `GET /api/agent/summary?minutes=60` возвращает краткую выжимку инцидентов и ошибок менее чем на 500 токенов (не перегружая контекст LLM).
+- **Поддержка MCP:** подключение агента по протоколу Model Context Protocol по адресу `http://<HA_IP>:8099/mcp`.
+- **Полный контроль безопасности:** функционал по умолчанию отключен (`enable_agent_api: false`), а внешний доступ защищается секретным токеном `api_token`.
+
+👉 Подробная инструкция и примеры кода на Python: [Руководство по интеграции с Hermes](docs/HERMES_INTEGRATION.md).
 
 ---
 

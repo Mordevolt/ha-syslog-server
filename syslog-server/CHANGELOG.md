@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5
+- **Local AI Agent Integration (Hermes / MCP):** Added dedicated, token-efficient health summary endpoint (`/api/agent/summary`) and Model Context Protocol (MCP) JSON-RPC 2.0 endpoint (`/mcp`) for local AI agents and assistants.
+- **Security & Port Controls:** Port 8099 can be optionally exposed to the local network for external agents; access is protected with Bearer token authentication (`api_token`). Disabled by default (`enable_agent_api: false`).
+- **Destructive Endpoint Protection:** External LAN calls to database purge (`/api/clear`) strictly require authentication token. Ingress access remains seamless and secure.
+
 ## 1.0.4
 - **Fixed Timestamp Discrepancy & Timezones:** Unified database storage and live SSE streaming to canonical UTC packet arrival timestamps, preventing double-offset addition (+3h skew) in local browser rendering.
 - **Configurable Page Size:** Added a dropdown selector to display 50, 100, 250, 500, or 1000 logs per page, persisted in local storage.
