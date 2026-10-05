@@ -44,6 +44,14 @@ When writing or refactoring code in this project, you **MUST** strictly adhere t
 * English (`en`) is the default language for UI, documentation, and configuration metadata.
 * Russian (`ru`) must always be supported as an instant toggle in the Web UI and as a localized section in docs.
 
+### G. Go 1.22+ ServeMux Routing Method Consistency
+* When using method-prefixed patterns in `http.ServeMux` (e.g. `GET /`), **all routes must explicitly define their HTTP methods** (`GET /path`, `POST /path`, `OPTIONS /path`).
+* Never register a method-less pattern (e.g. `/mcp`) alongside a method-prefixed pattern (`GET /`), as Go 1.22+ will panic at startup due to pattern precedence ambiguity.
+
+### H. BSD Syslog (RFC 3164) Arrival Timestamping
+* RFC 3164 timestamps lack timezones and years.
+* Over local UDP LAN, packets arrive in real time (<1ms). The arrival instant `time.Now().UTC()` must always be used as the authoritative timestamp. Storing local router time without a timezone creates double-offset skews (+3h in browsers).
+
 ---
 
 ## 3. Directory Layout
@@ -107,19 +115,30 @@ When writing or refactoring code in this project, you **MUST** strictly adhere t
 * When adding UI strings, add entries to both `i18n.en` and `i18n.ru` in the JavaScript object and update `applyLanguage()`.
 
 ### 4. Release & Version Bump Checklist
-When releasing a new version (e.g. `v1.0.2`):
-1. Update version in `syslog-server/config.yaml` (`version: "1.0.2"`).
+When releasing a new version (e.g. `v1.0.5`):
+1. Update version in `syslog-server/config.yaml` (`version: "1.0.5"`).
 2. Update version print in `syslog-server/main.go`.
 3. Update version badge in `syslog-server/internal/web/ui/index.html`.
 4. Add release notes to `syslog-server/CHANGELOG.md`.
-5. Stage and commit: `git commit -m "v1.0.2: <summary>"`.
+5. Stage and commit: `git commit -m "v1.0.5: <summary>"`.
 6. Push to remote: `git push origin main`.
+
+### 5. Running Git & Terminal Commands on Windows
+* The Windows host does not have the Go toolchain installed in PATH (`go` commands fail locally). Code compilation is performed entirely inside the Docker container by Home Assistant Supervisor. Carefully verify package imports (e.g. `"strings"`, `"time"`) prior to committing.
+* Network-dependent Git operations (`git push`, `git fetch`, `git ls-remote`) and `.git` index updates must be run with `BypassSandbox: true` to avoid permission blocks on `.git/index.lock` or network isolation hangs.
 
 ---
 
 ## 5. Security Checklist for Agents
 
-* **Network Exposure:** The add-on only exposes UDP port `514` to the host network (`ports: 514/udp: 514`). The HTTP server (port `8099`) **MUST NEVER** be mapped directly in `ports:`; it is strictly accessed through Home Assistant Ingress via Docker bridge network.
+* **Network Exposure & Agent API:**
+  - The add-on exposes UDP port `514` to the host network for syslog ingestion.
+  - HTTP port `8099` is reserved for Home Assistant Ingress by default (`ports: 8099/tcp: null`).
+  - When port `8099` is optionally mapped by the user for AI agents (Hermes / MCP):
+    - `enable_agent_api` must be explicitly toggled to `true` (default: `false`).
+    - External requests must provide `Authorization: Bearer <api_token>` or `X-API-Key: <api_token>`.
+    - Ingress requests are automatically verified by Home Assistant Supervisor.
+    - Database purge (`POST /api/clear`) from external LAN is strictly forbidden without a valid API token.
 * **Input Sanitization:** All text rendered into the DOM must pass through `escapeHtml()` to eliminate XSS risks.
 * **Rate Limiting:** Protect UDP ingestion with token-bucket limits to avoid CPU/memory starvation if a malfunctioning device floods port 514.
 * **Allowed Hosts:** IP filtering in `syslog-server/internal/config/config.go` supports both exact IPs and CIDR masks (e.g. `192.168.1.0/24`). Always validate against `s.cfg.IsIPAllowed(clientIP)`.
