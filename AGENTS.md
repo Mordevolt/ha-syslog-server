@@ -115,13 +115,15 @@ When writing or refactoring code in this project, you **MUST** strictly adhere t
 * When adding UI strings, add entries to both `i18n.en` and `i18n.ru` in the JavaScript object and update `applyLanguage()`.
 
 ### 4. Release & Version Bump Checklist
-When releasing a new version (e.g. `v1.0.5`):
-1. Update version in `syslog-server/config.yaml` (`version: "1.0.5"`).
+When releasing a new version (e.g. `v1.0.6`):
+1. Update version in `syslog-server/config.yaml` (`version: "1.0.6"`).
 2. Update version print in `syslog-server/main.go`.
 3. Update version badge in `syslog-server/internal/web/ui/index.html`.
-4. Add release notes to `syslog-server/CHANGELOG.md`.
-5. Stage and commit: `git commit -m "v1.0.5: <summary>"`.
-6. Push to remote: `git push origin main`.
+4. Update version in `syslog-server/internal/web/agent.go` (in MCP server info and initialize response).
+5. Add release notes to `syslog-server/CHANGELOG.md`.
+6. Stage and commit: `git commit -m "v1.0.6: <summary>"`.
+7. Push to remote: `git push origin main`.
+8. Tag and push tag: `git tag -a v1.0.6 -m "v1.0.6" && git push origin v1.0.6`. This triggers the GitHub Actions release workflow to automatically publish the GitHub Release with notes from `CHANGELOG.md`.
 
 ### 5. Running Git & Terminal Commands on Windows
 * The Windows host does not have the Go toolchain installed in PATH (`go` commands fail locally). Code compilation is performed entirely inside the Docker container by Home Assistant Supervisor. Carefully verify package imports (e.g. `"strings"`, `"time"`) prior to committing.
