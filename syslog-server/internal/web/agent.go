@@ -140,7 +140,7 @@ func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
 		// Server Info on GET
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"name":        "ha-syslog-server",
-			"version":     "1.0.5",
+			"version":     "1.0.6",
 			"mcp_version": "2024-11-05",
 			"endpoints": map[string]string{
 				"rpc":     "/mcp",
@@ -181,7 +181,7 @@ func (s *Server) handleMCP(w http.ResponseWriter, r *http.Request) {
 				},
 				"serverInfo": map[string]interface{}{
 					"name":    "ha-syslog-server",
-					"version": "1.0.5",
+					"version": "1.0.6",
 				},
 			},
 		})

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.6
+- **Full History Log Export (CSV & RAW):** Resolved an issue where exports were restricted to only 100 records due to pagination fallback limits. Exports now stream matching logs directly from SQLite into the HTTP download with $O(1)$ memory consumption, allowing complete database history downloads of any size.
+
 ## 1.0.5
 - **Local AI Agent Integration (Hermes / MCP):** Added dedicated, token-efficient health summary endpoint (`/api/agent/summary`) and Model Context Protocol (MCP) JSON-RPC 2.0 endpoint (`/mcp`) for local AI agents and assistants.
 - **Security & Port Controls:** Port 8099 can be optionally exposed to the local network for external agents; access is protected with Bearer token authentication (`api_token`). Disabled by default (`enable_agent_api: false`).

@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -257,10 +258,7 @@ func (d *DB) cleanOldLogs() {
 	d.db.Exec(`PRAGMA optimize`)
 }
 
-func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-
+func buildFilterConditions(filter LogFilter) (string, []interface{}, string, string) {
 	var conditions []string
 	var args []interface{}
 
@@ -299,23 +297,6 @@ func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
 		whereClause = "WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	// Count total matching
-	var total int64
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM syslog_entries %s", whereClause)
-	if err := d.db.QueryRow(countQuery, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
-
-	// Select rows
-	limit := filter.Limit
-	if limit <= 0 || limit > 5000 {
-		limit = 100
-	}
-	offset := filter.Offset
-	if offset < 0 {
-		offset = 0
-	}
-
 	orderCol := "id"
 	switch filter.OrderBy {
 	case "timestamp":
@@ -333,6 +314,32 @@ func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
 	orderDir := "DESC"
 	if strings.ToLower(filter.OrderDir) == "asc" {
 		orderDir = "ASC"
+	}
+
+	return whereClause, args, orderCol, orderDir
+}
+
+func (d *DB) QueryLogs(filter LogFilter) ([]*LogEntry, int64, error) {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+
+	whereClause, args, orderCol, orderDir := buildFilterConditions(filter)
+
+	// Count total matching
+	var total int64
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM syslog_entries %s", whereClause)
+	if err := d.db.QueryRow(countQuery, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	// Select rows
+	limit := filter.Limit
+	if limit <= 0 || limit > 5000 {
+		limit = 100
+	}
+	offset := filter.Offset
+	if offset < 0 {
+		offset = 0
 	}
 
 	queryArgs := append(args, limit, offset)
@@ -450,46 +457,84 @@ func (d *DB) GetUniqueHosts() ([]string, error) {
 }
 
 func (d *DB) ExportLogs(filter LogFilter, w io.Writer, format string) error {
-	filter.Limit = 50000 // Upper safety limit for single export
-	filter.Offset = 0
-	entries, _, err := d.QueryLogs(filter)
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+
+	whereClause, args, orderCol, orderDir := buildFilterConditions(filter)
+
+	dataQuery := fmt.Sprintf(`
+		SELECT id, timestamp, facility, severity, severity_name, source_ip, hostname, tag, message
+		FROM syslog_entries
+		%s
+		ORDER BY %s %s
+	`, whereClause, orderCol, orderDir)
+
+	rows, err := d.db.Query(dataQuery, args...)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
 	if format == "csv" {
 		cw := csv.NewWriter(w)
 		defer cw.Flush()
 		_ = cw.Write([]string{"ID", "Timestamp", "Severity", "Facility", "Source IP", "Hostname", "Tag", "Message"})
-		for _, e := range entries {
+
+		count := 0
+		for rows.Next() {
+			var id int64
+			var rawTime interface{}
+			var facility, severity int
+			var severityName, sourceIP, hostname, tag, message string
+
+			if err := rows.Scan(&id, &rawTime, &facility, &severity, &severityName, &sourceIP, &hostname, &tag, &message); err != nil {
+				return err
+			}
+
+			t := parseDBTime(rawTime)
 			_ = cw.Write([]string{
-				fmt.Sprintf("%d", e.ID),
-				e.Timestamp.Format("2006-01-02 15:04:05"),
-				e.SeverityName,
-				fmt.Sprintf("%d", e.Facility),
-				e.SourceIP,
-				e.Hostname,
-				e.Tag,
-				e.Message,
+				strconv.FormatInt(id, 10),
+				t.Format("2006-01-02 15:04:05"),
+				severityName,
+				strconv.Itoa(facility),
+				sourceIP,
+				hostname,
+				tag,
+				message,
 			})
+			count++
+			if count%1000 == 0 {
+				cw.Flush()
+			}
 		}
-		return nil
+		return rows.Err()
 	}
 
 	// RAW format
-	for _, e := range entries {
+	for rows.Next() {
+		var id int64
+		var rawTime interface{}
+		var facility, severity int
+		var severityName, sourceIP, hostname, tag, message string
+
+		if err := rows.Scan(&id, &rawTime, &facility, &severity, &severityName, &sourceIP, &hostname, &tag, &message); err != nil {
+			return err
+		}
+
+		t := parseDBTime(rawTime)
 		line := fmt.Sprintf("%s [%s] %s %s: %s\n",
-			e.Timestamp.Format("2006-01-02 15:04:05"),
-			strings.ToUpper(e.SeverityName),
-			e.SourceIP,
-			e.Tag,
-			e.Message,
+			t.Format("2006-01-02 15:04:05"),
+			strings.ToUpper(severityName),
+			sourceIP,
+			tag,
+			message,
 		)
 		if _, err := io.WriteString(w, line); err != nil {
 			return err
 		}
 	}
-	return nil
+
+	return rows.Err()
 }
 
 func (d *DB) ClearAll() error {
